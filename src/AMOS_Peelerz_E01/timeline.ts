@@ -92,14 +92,30 @@ export const sampleTrack = (time: number, keys: Key[]): Omit<Key, "t"> => {
     rotation: value("rotation"),
   };
 };
+// Integrating smoothstep changes camera tempo without moving any waypoints or
+// introducing velocity discontinuities. Hero travel is 25% slower, adding .29s
+// of breathing room; the final camera continues drifting instead of freezing.
+const rampIntegral = (t: number, start: number, end: number) => {
+  const duration = end - start;
+  if (t <= start) return 0;
+  if (t >= end) return t - start - duration / 2;
+  const u = (t - start) / duration;
+  return duration * (u ** 3 - 0.5 * u ** 4);
+};
+export const cameraTime = (t: number) =>
+  t - 0.25 * (rampIntegral(t, 5.6, 5.8) - rampIntegral(t, 6.7, 7));
+export const getCamera = (t: number) => sampleTrack(cameraTime(t), CAMERA);
+export const planeZoom = (scale: number, depth: number) =>
+  scale ** (depth === 0.25 ? 0.97 : depth === 1.3 ? 1.03 : 1);
+
+// One lens crossing straddles the loop boundary. Its position advances 250px
+// per frame on both sides of the seam, rather than growing and reversing.
+export const loopPassTime = (t: number): number | null =>
+  t <= 0.32 ? t : t >= 8 ? t - DURATION : null;
 export const lensCover = (t: number) =>
-  Math.max(
-    interpolate(t, [0, 0.18], [1, 0], ease),
-    interpolate(
-      t,
-      [1.3, 1.75, 2.22, 2.3, 2.55, 2.8],
-      [0, 0.06, 0.8, 1, 1, 0],
-      ease,
-    ),
-    interpolate(t, [7.85, 8.4, 8.5], [0, 1, 1], ease),
+  interpolate(
+    t,
+    [1.3, 1.9, 2.26, 2.31, 2.46, 2.64],
+    [0, 0.04, 0.65, 1, 1, 0],
+    ease,
   );

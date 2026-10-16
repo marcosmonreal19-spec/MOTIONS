@@ -1,6 +1,12 @@
 import type { CSSProperties } from "react";
-import { Img, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
-import { GUMMY, sampleTrack } from "./timeline";
+import {
+  Img,
+  interpolate,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { ease, GUMMY, sampleTrack } from "./timeline";
 
 const ASSETS = {
   whole: {
@@ -82,6 +88,12 @@ export const ProductLayer = () => {
   const { fps } = useVideoConfig();
   const time = frame / fps;
   const gummy = sampleTrack(time, GUMMY);
+  const packRelief = interpolate(
+    time,
+    [4.95, 5.2, 5.8, 6.1],
+    [0, 1, 1, 0],
+    ease,
+  );
   return (
     <>
       {/* The pack is permanently placed in the world, discovered by camera travel. */}
@@ -102,9 +114,9 @@ export const ProductLayer = () => {
       {/* State substitution occurs only behind a fully opaque foreground ribbon. */}
       <Product
         asset={time < 2.4 ? "whole" : "peeled"}
-        width={(time < 2.4 ? 500 : 565) * gummy.scale}
-        x={gummy.x}
-        y={gummy.y}
+        width={(time < 2.4 ? 500 : 565) * gummy.scale * (1 - 0.13 * packRelief)}
+        x={gummy.x + 24 * packRelief}
+        y={gummy.y + 65 * packRelief}
         style={{ rotate: `${gummy.rotation}deg` }}
       />
     </>

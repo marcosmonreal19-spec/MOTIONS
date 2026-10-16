@@ -1,7 +1,9 @@
 import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import {
   C,
-  CAMERA,
+  getCamera,
+  loopPassTime,
+  planeZoom,
   GUMMY,
   lensCover,
   ORIGIN,
@@ -45,16 +47,42 @@ export const PeelRibbon = ({
           d={trajectory}
           stroke={C.green}
           strokeWidth={3}
-          strokeDasharray="240 3800"
+          strokeDasharray="240 20000"
           transform="translate(-85 -40)"
         />
       </svg>
     );
-  const camera = sampleTrack(t, CAMERA);
+  const camera = getCamera(t);
   const gummy = sampleTrack(t, GUMMY);
   const near = lensCover(t);
+  const seam = loopPassTime(t);
+  const zoom = planeZoom(camera.scale, 1.3);
   const cameraX = ORIGIN.x + (camera.x - ORIGIN.x) * 1.3;
   const cameraY = ORIGIN.y + (camera.y - ORIGIN.y) * 1.3;
+  if (seam !== null) {
+    // The same bent ribbon travels left-to-right through the lens at constant
+    // screen-space speed before and after the seam. No end-card yellow hold.
+    const offset = seam * 7500 + 125;
+    const loopPath = `M${offset} -4000C${offset + 100} -1700 ${offset - 180} -900 ${offset} 0S${offset + 180} 1700 ${offset} 4000`;
+    return (
+      <svg
+        data-loop-pass={seam}
+        viewBox="0 0 5000 5600"
+        width={WORLD.width}
+        height={WORLD.height}
+        style={{ position: "absolute", inset: 0, overflow: "visible" }}
+        fill="none"
+      >
+        <path
+          d={loopPath}
+          stroke={C.banana}
+          strokeWidth={2400}
+          strokeLinecap="round"
+          transform={`translate(${cameraX} ${cameraY}) rotate(${camera.rotation}) scale(${1 / zoom})`}
+        />
+      </svg>
+    );
+  }
   const approach = interpolate(near, [0, 0.7, 1], [0, 1, 1]);
   const x = gummy.x + (cameraX - gummy.x) * approach;
   const y = gummy.y + (cameraY - gummy.y) * approach;
@@ -72,7 +100,7 @@ export const PeelRibbon = ({
       <path
         d={path}
         stroke={C.banana}
-        strokeWidth={Math.max(0.01, (near ** 3 * 3200) / camera.scale)}
+        strokeWidth={Math.max(0.01, (near ** 3 * 3200) / zoom)}
         strokeLinecap="round"
       />
     </svg>
