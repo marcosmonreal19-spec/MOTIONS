@@ -16,7 +16,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="AMOS-Peelerz-E01"
         component={AMOS_Peelerz_E01}
-        durationInFrames={240}
+        durationInFrames={255}
         fps={30}
         width={1080}
         height={1920}

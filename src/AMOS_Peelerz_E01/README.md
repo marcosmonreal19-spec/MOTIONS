@@ -1,39 +1,48 @@
-# AMOS_Peelerz_E01
+# AMOS_Peelerz_E01 — continuous product journey
 
-Performance candy motion, 1080 × 1920, 30 fps, 240 frames.
-Remotion Studio ID: `AMOS-Peelerz-E01` (Remotion disallows underscores in IDs).
+1080 × 1920 · 30 fps · 255 frames / 8.5 seconds.
+Studio ID: `AMOS-Peelerz-E01` (Remotion does not support underscores in IDs).
 
-## Edit
+## Architecture
 
-- `shared.tsx`: `COPY`, palette `C`, original PNG geometry and reusable graphics.
-- `Scene1.tsx`–`Scene5.tsx`: independently authored scene layouts and motion.
-- `index.tsx`: named `Sequence` timeline, curved scene covers and exact opening-frame loop.
+There is one persistent 5000 × 5600 world, not a timeline of separate scenes.
+`World.tsx` composes its persistent planes; `CameraRig.tsx` projects world
+coordinates through one camera path. No scene mounts, layout switches, fades,
+rectangular wipes or camera resets are used.
 
-| Scene           | Seconds | Frames (inclusive) |
-| --------------- | ------- | ------------------ |
-| Hook            | 0–1.4   | 0–41               |
-| Peel transition | 1.4–3   | 42–89              |
-| Pélala          | 3–4.6   | 90–137             |
-| Pack reveal     | 4.6–6.6 | 138–197            |
-| End card / loop | 6.6–8   | 198–239            |
+- `timeline.ts`: editable narrative copy, palette, camera and gummy waypoints.
+  Non-uniform cubic Hermite tracks share derivatives between segments, so
+  camera position, zoom, rotation and velocity remain continuous.
+- `BackgroundWorld.tsx`: oversized luminous background, 0.25× camera travel.
+- `Typography.tsx`: Poppins only, 0.65× camera travel. Main copy enters through
+  frame-driven spring masks and leaves physically through the moving world.
+  Foreground letter fragments cross the product for actual interleaved layering.
+- `ProductLayer.tsx`: 1× camera travel. The pack is already in the world; camera
+  tracking discovers it. The peeled gummy guides the camera toward it.
+- `PeelRibbon.tsx`: persistent world-space trajectory and a 1.3× foreground
+  ribbon. It approaches the lens, covers it and recedes during the peel event.
+  Whole-to-peeled substitution happens at 2.4 seconds, inside full lens coverage.
+  The same ribbon closes the lens for the yellow-to-yellow loop.
 
-## Graphic system
+## Narrative timing
 
-`AnimatedGradientBackground`, `GraphicBlob`, `PeelRibbon`, `KineticWord`,
-`ProductShadow`, `MotionTrail`, `RadialBurst`, `FloatingShape`, `EditorialMark`
-and `SceneTransition` are built from React, CSS and SVG. All motion is driven
-by the Remotion frame clock, springs and custom easing. Grain uses a fixed SVG
-noise seed; no random particles or external graphic assets are used.
+0–1.3: macro dolly-out / hook; 1.3–2.8: camera follows the peel curve;
+2.8–4.4: peeled macro, discovery and action; 4.4–6.5: journey to the stationary
+pack; 6.5–8.5: hero pull-out, CTA, foreground ribbon and loop.
 
-Scene 2 shares a circular boundary between complementary masks and the visible
-peel arc. It substitutes the exact whole and peeled PNGs without morphing them.
-Scene 3's offset monochrome silhouette is an explicitly graphical motion shadow.
-The last curved cover reveals `Scene1` frozen at frame 0, matching the first frame.
+These are narrative windows on the same timeline, not independent scenes.
 
-`Product` offsets transparent source padding without clipping or changing the
-PNG. Uniform scale and rotation preserve proportions, color and packaging.
-Only the three original files under `public/amos/peelerz banana/` are loaded.
-`MOTIONS-Vertical` is independent and unchanged.
+## Font and assets
 
-Preview with `npm run dev -- --no-open`, then select `AMOS-Peelerz-E01`.
-`npm run lint` runs ESLint and TypeScript. No MP4 is required for review.
+Poppins metadata is imported from `@remotion/google-fonts/Poppins` and loaded
+using `loadFontFromInfo`. Official Poppins Latin WOFF2 files, weights 500–900,
+are served locally from `public/fonts/poppins` to avoid an external CDN dependency.
+The license is included there. No fallback font family is authored.
+
+Only the three original product PNGs are used. `Product` compensates for their
+transparent padding while retaining the full image, original aspect ratio,
+colors and details. Scale is always proportional. Shadows add depth without
+recoloring the product. `MOTIONS-Vertical` remains independent and unchanged.
+
+Preview: `npm run dev -- --no-open`, select `AMOS-Peelerz-E01`, press Play.
+Validation: `npm run lint` (ESLint and TypeScript). No MP4 is required.
