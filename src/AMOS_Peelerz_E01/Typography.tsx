@@ -1,24 +1,14 @@
 import type { CSSProperties } from "react";
-import { loadFontFromInfo } from "@remotion/google-fonts/from-info";
-import { getInfo } from "@remotion/google-fonts/Poppins";
+import { loadFont } from "@remotion/google-fonts/Poppins";
 import {
   interpolate,
   spring,
-  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
 import { C, COPY, ease } from "./timeline";
 
-// Poppins metadata comes from the requested Remotion font module. The same
-// licensed Google Font is served locally so preview never depends on a CDN.
-const info = getInfo();
-for (const weight of ["500", "600", "700", "800", "900"] as const) {
-  info.fonts.normal[weight].latin = staticFile(
-    `fonts/poppins/poppins-latin-${weight}-normal.woff2`,
-  );
-}
-export const { fontFamily } = loadFontFromInfo(info, "normal", {
+export const { fontFamily } = loadFont("normal", {
   weights: ["500", "600", "700", "800", "900"],
   subsets: ["latin"],
 });

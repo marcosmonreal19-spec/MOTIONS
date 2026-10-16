@@ -34,10 +34,9 @@ These are narrative windows on the same timeline, not independent scenes.
 
 ## Font and assets
 
-Poppins metadata is imported from `@remotion/google-fonts/Poppins` and loaded
-using `loadFontFromInfo`. Official Poppins Latin WOFF2 files, weights 500–900,
-are served locally from `public/fonts/poppins` to avoid an external CDN dependency.
-The license is included there. No fallback font family is authored.
+Poppins is loaded with the public `loadFont` API from
+`@remotion/google-fonts/Poppins`, using the normal style, weights 500–900
+and the Latin subset. No fallback font family is authored.
 
 Only the three original product PNGs are used. `Product` compensates for their
 transparent padding while retaining the full image, original aspect ratio,
