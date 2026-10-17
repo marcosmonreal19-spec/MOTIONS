@@ -1,5 +1,5 @@
 import { AbsoluteFill } from "remotion";
-import { BackgroundWorld } from "./BackgroundWorld";
+import { BackgroundWorld, PackBackdrop } from "./BackgroundWorld";
 import { CameraRig } from "./CameraRig";
 import { PeelRibbon } from "./PeelRibbon";
 import { ProductLayer } from "./ProductLayer";
@@ -10,6 +10,9 @@ export const World = () => (
   <AbsoluteFill style={{ background: C.banana, overflow: "hidden" }}>
     <CameraRig depth={0.25}>
       <BackgroundWorld />
+    </CameraRig>
+    <CameraRig depth={0.85}>
+      <PackBackdrop />
     </CameraRig>
     <CameraRig depth={1}>
       <PeelRibbon />

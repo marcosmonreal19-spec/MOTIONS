@@ -102,9 +102,30 @@ const rampIntegral = (t: number, start: number, end: number) => {
   const u = (t - start) / duration;
   return duration * (u ** 3 - 0.5 * u ** 4);
 };
-export const cameraTime = (t: number) =>
-  t - 0.25 * (rampIntegral(t, 5.6, 5.8) - rampIntegral(t, 6.7, 7));
-export const getCamera = (t: number) => sampleTrack(cameraTime(t), CAMERA);
+// A .65s dynamic hero hold after the pack is fully discovered. Camera drift
+// continues at 15% tempo; no keyframe, perspective or product geometry resets.
+const heroClock = (t: number) =>
+  t - 0.85 * (rampIntegral(t, 6.5, 6.6) - rampIntegral(t, 7.25, 7.4));
+export const cameraTime = (t: number) => {
+  const clock = heroClock(t);
+  return (
+    clock - 0.25 * (rampIntegral(clock, 5.6, 5.8) - rampIntegral(clock, 6.7, 7))
+  );
+};
+export const hookTravel = (t: number) =>
+  interpolate(t, [1.3, 2.4], [0, -64], ease);
+export const getCamera = (t: number) => {
+  const camera = sampleTrack(cameraTime(t), CAMERA);
+  // Short motivated arc into the hero: the full rotated pack, including its
+  // right edge, stays inside the viewport during the dynamic reading hold.
+  const heroFraming = interpolate(
+    t,
+    [6.25, 6.6, 7.35, 7.9],
+    [0, 68, 68, 0],
+    ease,
+  );
+  return { ...camera, x: camera.x + heroFraming };
+};
 export const planeZoom = (scale: number, depth: number) =>
   scale ** (depth === 0.25 ? 0.97 : depth === 1.3 ? 1.03 : 1);
 

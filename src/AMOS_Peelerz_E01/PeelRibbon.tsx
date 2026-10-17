@@ -1,6 +1,13 @@
-import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  interpolate,
+  interpolateColors,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import {
   C,
+  ease,
+  hookTravel,
   getCamera,
   loopPassTime,
   planeZoom,
@@ -11,9 +18,6 @@ import {
   WORLD,
 } from "./timeline";
 
-const trajectory =
-  "M1150 1590C1640 1790 1890 1500 1680 2010S1700 2670 2280 2800S2820 3510 3220 3570S3970 4080 2960 4460";
-
 export const PeelRibbon = ({
   foreground = false,
 }: {
@@ -22,37 +26,57 @@ export const PeelRibbon = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = frame / fps;
-  if (!foreground)
+  const camera = getCamera(t);
+  if (!foreground) {
+    // PELAR?'s baseline lives in the .65 typography plane. Convert its end
+    // into product-plane world space so the underline becomes this same curve.
+    const anchorX = 900 + hookTravel(t) + (camera.x - ORIGIN.x) * 0.35;
+    const anchorY = 1545 + (camera.y - ORIGIN.y) * 0.35;
+    const attach = interpolate(t, [1.15, 1.95], [0, 1], ease);
+    const startX = anchorX + (1150 - anchorX) * attach;
+    const startY = anchorY + (1590 - anchorY) * attach;
+    const connected = `M${startX} ${startY}C${startX + 280} ${startY + 20} 1890 1500 1680 2010S1700 2670 2280 2800S2820 3510 3220 3570S3970 4080 2960 4460`;
+    const growth = interpolate(
+      t,
+      [0.88, 1.25, 1.85, 2.65],
+      [0, 0.1, 0.38, 1],
+      ease,
+    );
+    const width = interpolate(t, [0.88, 1.2, 1.7], [4, 12, 115], ease);
+    const drift = interpolate(t, [6.4, 8.5], [0, -12], ease);
     return (
       <svg
         viewBox="0 0 5000 5600"
         width={WORLD.width}
         height={WORLD.height}
-        style={{ position: "absolute", inset: 0, overflow: "visible" }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          overflow: "visible",
+          translate: `${drift}px 0`,
+          opacity: growth <= 0 ? 0 : 1,
+        }}
         fill="none"
       >
         <path
-          d={trajectory}
-          stroke={C.banana}
-          strokeWidth={115}
+          d={connected}
+          pathLength={1}
+          strokeDasharray={`${growth} 1`}
+          stroke={interpolateColors(t, [0.88, 1.45], [C.green, C.banana])}
+          strokeWidth={width}
           strokeLinecap="round"
         />
         <path
-          d={trajectory}
+          d={connected}
+          pathLength={1}
+          strokeDasharray={`${growth} 1`}
           stroke={C.cream}
           strokeWidth={3}
           transform="translate(-55 -22)"
         />
-        <path
-          d={trajectory}
-          stroke={C.green}
-          strokeWidth={3}
-          strokeDasharray="240 20000"
-          transform="translate(-85 -40)"
-        />
       </svg>
     );
-  const camera = getCamera(t);
+  }
   const gummy = sampleTrack(t, GUMMY);
   const near = lensCover(t);
   const seam = loopPassTime(t);
